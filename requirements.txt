@@ -1,9 +1,11 @@
-streamlit
-pandas
-numpy
-transformers==4.43.3
-torch==2.3.1
-accelerate
-huggingface-hub
-scipy
-safetensors
+streamlit==1.49.1
+pandas==2.3.2
+numpy==2.3.2
+
+# HF stack
+transformers==4.44.2
+torch==2.5.1
+accelerate==1.0.1
+huggingface-hub==0.26.3
+safetensors==0.4.5
+scipy==1.14.1
