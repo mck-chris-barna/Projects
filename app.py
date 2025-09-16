@@ -17,16 +17,11 @@ EMAIL_REQUIRED_DOMAIN = None  # set like "acme.com" if you want to restrict
 st.set_page_config(page_title=APP_TITLE, page_icon="🧪", layout="wide")
 
 # ---------------------------
-# SECRETS CHECK
+# SECRETS
 # ---------------------------
-APP_PASSWORD = st.secrets.get("APP_PASSWORD", None)
-SHEET_ID = st.secrets.get("SHEET_ID", None)
-GCP_SA_INFO = st.secrets.get("gcp", None)
-
-ok_pw = APP_PASSWORD is not None
-ok_sheet = SHEET_ID is not None
-ok_gcp = GCP_SA_INFO is not None
-st.sidebar.markdown("**Secrets loaded:** " + ("✅" if (ok_pw and ok_sheet and ok_gcp) else "❌"))
+APP_PASSWORD = st.secrets["APP_PASSWORD"]
+SHEET_ID = st.secrets["SHEET_ID"]
+GCP_SA_INFO = st.secrets["gcp"]
 
 # ---------------------------
 # GOOGLE SHEETS HELPERS
@@ -35,8 +30,10 @@ st.sidebar.markdown("**Secrets loaded:** " + ("✅" if (ok_pw and ok_sheet and o
 def _get_sheet():
     import gspread
     from google.oauth2.service_account import Credentials
-    scopes = ["https://www.googleapis.com/auth/spreadsheets",
-              "https://www.googleapis.com/auth/drive"]
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive"
+    ]
     creds = Credentials.from_service_account_info(GCP_SA_INFO, scopes=scopes)
     gc = gspread.authorize(creds)
     sh = gc.open_by_key(SHEET_ID)
@@ -47,23 +44,14 @@ def _get_sheet():
     return ws
 
 def _log_email(email_val: str, status: str, details: str = ""):
-    try:
-        ws = _get_sheet()
-        ws.append_row([
-            datetime.now(timezone.utc).isoformat(),
-            email_val or "",
-            st.session_state.get("sid", ""),
-            status,
-            details
-        ])
-    except Exception as e:
-        st.error("Google Sheets logging failed:")
-        st.exception(e)
-
-# sidebar test button
-if st.sidebar.button("🔌 Test Google Sheets logging"):
-    _log_email("healthcheck@example.com", "manual", "sidebar test")
-    st.sidebar.success("Tried to append a test row to the Sheet.")
+    ws = _get_sheet()
+    ws.append_row([
+        datetime.now(timezone.utc).isoformat(),
+        email_val or "",
+        st.session_state.get("sid", ""),
+        status,
+        details
+    ])
 
 # ---------------------------
 # AUTH GATE
@@ -93,7 +81,7 @@ def _auth_gate():
         if not _valid_email(email):
             st.error("Please enter a valid email.")
             _log_email(email, "invalid_email")
-        elif APP_PASSWORD and pw != APP_PASSWORD:
+        elif pw != APP_PASSWORD:
             st.error("Incorrect password.")
             _log_email(email, "bad_password")
         else:
