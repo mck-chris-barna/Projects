@@ -1,4 +1,4 @@
-# Sentiment Analysis for Dummies  
+# How to Read - Sentiment Analysis Output
 *(using twitter-roberta-base-sentiment-latest)*
 
 ---
